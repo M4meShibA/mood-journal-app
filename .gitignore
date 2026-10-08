@@ -1,0 +1,22 @@
+# 秘密情報や環境変数ファイル
+.env
+*.env
+
+# SQLite データベース（個人データやテストデータが入るため）
+*.db
+*.sqlite3
+
+# Pythonのキャッシュファイル
+__pycache__/
+*.pyc
+
+# バックアップフォルダ
+backups/
+
+# 仮想環境
+venv/
+.venv/
+
+# エディタの設定
+.vscode/
+.idea/

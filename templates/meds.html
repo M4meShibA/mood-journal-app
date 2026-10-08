@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お薬の管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='日記.css')}}">
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; max-width: 700px; margin: 40px auto; padding: 20px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: #94a3b8; }
+        input, select, textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; box-sizing: border-box; margin-bottom: 12px; }
+        .btn { border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-main { background: #38bdf8; color: #0f172a; }
+        .btn-del { background: #ef4444; color: #fff; }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: bold; }
+        .st-服用中 { background: #166534; color: #bbf7d0; }
+        .st-減薬中 { background: #854d0e; color: #fde68a; }
+        .st-中止 { background: #475569; color: #e2e8f0; }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <p><a href="/" style="color: #38bdf8;">← 日記に戻る</a></p>
+    <h1>💊 お薬の管理</h1>
+
+    <!-- 登録フォーム -->
+    <form class="card" action="/meds/add" method="POST">
+        <h3 style="margin-top: 0;">薬を登録する</h3>
+        <label for="name">薬の名前</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="dose">量・飲み方（例：1日1回 5mg）</label>
+        <input type="text" id="dose" name="dose">
+
+        <label for="status">状態</label>
+        <select id="status" name="status">
+            {% for s in statuses %}
+            <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="note">メモ（減薬の経過、先生に言われたことなど）</label>
+        <textarea id="note" name="note" rows="2"></textarea>
+
+        <button type="submit" class="btn btn-main">登録する</button>
+    </form>
+
+    <!-- 登録済みの薬 -->
+    {% for m in meds %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+                <strong style="font-size: 1.1rem;">{{ m[1] }}</strong>
+                <span class="badge st-{{ m[3] }}" style="margin-left: 8px;">{{ m[3] }}</span>
+            </div>
+            <span style="color: #64748b; font-size: 0.8rem;">更新: {{ m[5] }}</span>
+        </div>
+
+        <form action="/meds/update/{{ m[0] }}" method="POST">
+            <label>量・飲み方</label>
+            <input type="text" name="dose" value="{{ m[2] or '' }}">
+
+            <label>状態</label>
+            <select name="status">
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if s == m[3] %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+
+            <label>メモ</label>
+            <textarea name="note" rows="2">{{ m[4] or '' }}</textarea>
+
+            <button type="submit" class="btn btn-main">更新する</button>
+        </form>
+
+        <form action="/meds/delete/{{ m[0] }}" method="POST" onsubmit="return confirm('この薬を削除しますか？');" style="margin-top: 10px;">
+            <button type="submit" class="btn btn-del">削除</button>
+        </form>
+    </div>
+    {% else %}
+    <p style="color: #94a3b8;">まだ薬が登録されていません。</p>
+    {% endfor %}
+</body>
+</html>

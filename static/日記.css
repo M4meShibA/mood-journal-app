@@ -1,0 +1,186 @@
+@charset "utf-8";
+
+:root {
+    /* 少し明るめのダークブルーのカラーパレット */
+    --bg-color: #23449e;       /* 背景色（落ち着いた深青） */
+    --surface-color: #2e51a2;  /* カードの色（少し明るい青） */
+    --input-bg: #1e3a8a;       /* 入力欄の背景 */
+    --text-main: #f8fafc;      /* メインの文字色（白） */
+    --text-muted: #93c5fd;     /* サブの文字色（薄い水色） */
+    --accent: #38bdf8;         /* アクセントカラー（明るい水色） */
+    --border: #3b82f6;         /* 枠線の色 */
+}
+
+body {
+    font-family: "Yu Gothic", "Hiragino Sans", "Meiryo", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    width: min(600px, 100%);
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* 入力エリアをまとめるカードのデザイン */
+.diary-card {
+    background: var(--surface-color);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+}
+
+/* 入力欄のデザイン（日付・テキストエリア） */
+input[type="date"],
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+/* 入力欄にフォーカスした時（枠線を光らせる） */
+input[type="date"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+}
+
+/* 5段階評価の横並びデザイン */
+.rating-group {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background-color: #0f172a;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 1;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.radio-label input[type="radio"]{
+    display: none;
+}
+
+.radio-label:hover{
+    background-color: #1e293b;
+    border-color: var(--accent);
+}
+
+.radio-label:has(input[type="radio"]:checked){
+    background-color: #000000;
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(76, 188, 236, 0.4);
+}
+
+
+/* 保存ボタンのデザイン */
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #0a0f1c;
+    border: none;
+    border-radius: 999px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    background: #7dd3fc;
+}
+
+/* Flashメッセージ全体のスタイル */
+.flash-messages {
+  margin: 15px auto;
+  max-width: 600px;
+  width: 90%;
+}
+
+.flash-message {
+  padding: 12px 20px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  /* グレーベースの標準スタイル */
+  background-color: #333333;
+  color: #f8f9fa;
+  border: 1px solid #444444;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 成功メッセージ（深みのある落ち着いたダークグリーン） */
+.flash-message.success {
+  background-color: #2b3a2f;
+  color: #d1e7dd;
+  border-left: 4px solid #198754;
+}
+
+/* エラーメッセージ（彩度を抑えたシックなダークレッド） */
+.flash-message.error {
+  background-color: #3a2b2c;
+  color: #f8d7da;
+  border-left: 4px solid #dc3545;
+}
+
+/* 通知メッセージ（洗練されたダークチャコールグレー） */
+.flash-message.info {
+  background-color: #2c3035;
+  color: #e2e3e5;
+  border-left: 4px solid #6c757d;
+}

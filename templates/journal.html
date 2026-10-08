@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>体調管理日記</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='日記.css')}}">
+</head>
+<body>
+    <!-- Flashメッセージ表示エリア -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+           <div class="flash-message {{ category }}">
+             {{ message }}
+           </div>
+          {% endfor %}
+        </div>
+       {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <header class="header">
+            <div>
+                <h1>今日の記録</h1>
+                <p>自分の心と体に向き合う時間</p>
+            </div>
+            
+            <!-- ユーザー表示 & ログアウトボタン -->
+            {% if session.get('username') %}
+            <div style="display: flex; align-items: center; gap: 15px; background-color: #1e293b; padding: 8px 16px; border-radius: 8px; border: 1px solid #334155;">
+                <span style="font-size: 0.9rem; color: #f8fafc;">username <strong>{{ session.get('username') }}</strong> さん</span>
+                <a href="/logout" style="background-color: #ef4444; color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; transition: background-color 0.2s;">
+                    ログアウト
+                </a>
+                <a href="/meds" style="background-color: #38bdf8; color: #0f172a; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: bold;">💊 お薬</a>
+            </div>
+            {% endif %}
+        </header>
+
+        <main>
+            <form method="GET" action="/" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                <label for="month" style="color: #94a3b8;">表示する月</label>
+                <input type="month" id="month" name="month" value="{{ month }}"
+                    style="padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff;">
+                <button type="submit" style="background: #38bdf8; color: #0f172a; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer;">絞り込む</button>
+                <a href="/" style="color: #38bdf8; font-size: 0.9rem;">すべて表示</a>
+            </form>
+            <!-- 現在のお薬 -->
+            <div style="background: #1e293b; padding: 16px 20px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3 style="color: #f8fafc; margin: 0;">💊 現在のお薬</h3>
+                    <a href="/meds" style="color: #38bdf8; font-size: 0.85rem;">管理する</a>
+                </div>
+
+                {% if current_meds %}
+                <ul style="list-style: none; margin: 0; padding: 0;">
+                    {% for m in current_meds %}
+                    <li style="padding: 6px 0; border-top: 1px solid #334155; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <strong>{{ m[0] }}</strong>
+                        {% if m[1] %}<span style="color: #cbd5e1; font-size: 0.9rem;">{{ m[1] }}</span>{% endif %}
+                        {% if m[2] == '減薬中' %}
+                        <span style="background: #854d0e; color: #fde68a; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: bold;">減薬中</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p style="color: #94a3b8; margin: 0; font-size: 0.9rem;">登録されている薬はありません。<a href="/meds" style="color: #38bdf8;">登録する</a></p>
+                {% endif %}
+            </div>
+            <!-- ① グラフ表示エリア（フォームから独立させました） -->
+            <div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                <h3 style="color: #f8fafc; margin-top: 0;">📈 体調と満足度と睡眠の推移</h3>
+                <canvas id="conditionChart" width="400" height="180" data-logs='{{ logs | tojson }}'></canvas>
+            </div>
+
+            <!-- ② 記録を入力するフォーム -->
+            <form class="diary-card" action="/save" method="POST">
+                
+                <!-- 日付選択 -->
+                <div class="form-group">
+                    <label for="date">日付</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <!-- 5段階評価 -->
+                <div class="form-group">
+                    <label>今日の体調（1:不調 〜 5:好調）</label>
+                    <div class="rating-group">
+                        <label class="radio-label"><input type="radio" name="condition" value="1"> 1</label>
+                        <label class="radio-label"><input type="radio" name="condition" value="2"> 2</label>
+                        <label class="radio-label"><input type="radio" name="condition" value="3" checked> 3</label>
+                        <label class="radio-label"><input type="radio" name="condition" value="4"> 4</label>
+                        <label class="radio-label"><input type="radio" name="condition" value="5"> 5</label>
+                    </div>
+                </div>
+
+                <!-- 満足度の入力欄 -->
+                <div class="form-group">
+                    <label>満足度 (1~5):</label>
+                    <div class="rating-group">
+                        <label class="radio-label"><input type="radio" name="rating" value="1"> 1</label>
+                        <label class="radio-label"><input type="radio" name="rating" value="2"> 2</label>
+                        <label class="radio-label"><input type="radio" name="rating" value="3" checked> 3</label>
+                        <label class="radio-label"><input type="radio" name="rating" value="4"> 4</label>
+                        <label class="radio-label"><input type="radio" name="rating" value="5"> 5</label>
+                    </div>
+                </div>
+
+                <!-- 睡眠時間入力欄 -->
+                <div class="form-group mb-3">
+                    <label for="sleep_hours" class="form-label">睡眠時間 (時間):</label>
+                    <input type="number" step="0.5" min="0" max="24" id="sleep_hours" name="sleep_hours" class="form-control" value="7.0" required>
+                </div>
+
+                <!-- 日記の記入欄 -->
+                <div class="form-group">
+                    <label for="memo">日記・メモ</label>
+                    <textarea id="memo" name="memo" rows="6" placeholder="今日あったこと、感じたことを自由に書いてみましょう..."></textarea>
+                </div>
+
+                <!-- 保存ボタン -->
+                <button type="submit" class="submit-btn">記録を保存する</button>
+            </form>
+
+            <hr style="margin: 40px 0; border-color: #333;">
+
+            <!-- ③ 過去の記録一覧 -->
+            <h2>過去の記録</h2>
+            <div class="logs-container">
+                {% for log in logs %}
+                <div style="background: #1e293b; padding: 15px; margin-bottom: 12px; border-radius: 8px; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1; padding-right: 15px;">
+                        <div style="margin-bottom: 4px;">
+                            <strong>📅 {{ log[1] }}</strong> 
+                            <span style="margin-left: 10px; color: #38bdf8;">体調: {{ log[2] }}</span>
+                            <span style="margin-left: 10px; color: #facc15;">満足度: {{ log[5] }}</span>
+                            <span style="margin-left: 10px; color: #f472b6;">睡眠: {{ log[4] }}時間</span>
+                        </div>
+                        {% if log[3] %}
+                        <p style="margin: 6px 0 0 0; color: #cbd5e1; font-size: 0.95rem; white-space: pre-wrap;">{{ log[3] }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
+                        <a href="/edit/{{ log[0] }}" style="background: #38bdf8; color: #0f172a; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; display: inline-block;">
+                            編集
+                        </a>
+                        <form action="/delete/{{ log[0] }}" method="POST" onsubmit="return confirm('本当にこの記録を削除しますか？');" style="margin: 0;">
+                            <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
+                                削除
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                    <p>まだ記録がありません。</p>
+                {% endfor %}   
+            </div>
+        </main>
+    </div>
+
+<script>
+    const canvasElement = document.getElementById('conditionChart');
+    const rawLogs = JSON.parse(canvasElement.dataset.logs);
+    
+    const reversedLogs = [...rawLogs].reverse();
+    const labels = reversedLogs.map(log => log[1]); 
+    const dataValues = reversedLogs.map(log => log[2]); 
+    const sleepValues = reversedLogs.map(log => log[4]);
+    const ratingValues = reversedLogs.map(log => log[5])
+
+    const ctx = canvasElement.getContext('2d');
+    const conditionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '体調スコア (1-5)',
+                    data: dataValues,
+                    borderColor: '#00f2fe',
+                    backgroundColor: '#00f2fe',
+                    yAxisID: 'y', // 左側Y軸を使用
+                    tension: 0.2
+                },
+                 {
+                    label: '満足度 (rating)',
+                    data: ratingValues,
+                    borderColor: '#facc15',
+                    backgroundColor: '#facc15',
+                    yAxisID: 'y', // y軸を使用
+                    tension: 0.2
+                },
+                {
+                    label: '睡眠時間 (h)',
+                    data: sleepValues,
+                    borderColor: '#ff007f',
+                    backgroundColor: '#ff007f',
+                    yAxisID: 'y1', // 右側Y軸（2軸化）を使用
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            scales: {
+                // 左Y軸（体調・満足度スコア用）
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    min: 1,
+                    max: 5,
+                    ticks: { stepSize: 1, color: '#00f2fe' },
+                    grid: { color: '#334155' }
+                },
+                // 右Y軸（睡眠時間用）
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    min: 0,
+                    max: 12, // 睡眠時間の最大目安
+                    ticks: { stepSize: 2, color: '#ff007f' },
+                    grid: { drawOnChartArea: false } // グリッド線が重ならないように設定
+                },
+                x: {
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: '#334155' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#f8fafc' } }
+            }
+        }
+    });
+</script>
+</body>
+</html>
