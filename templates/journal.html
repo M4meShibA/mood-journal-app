@@ -31,7 +31,7 @@
             <!-- ユーザー表示 & ログアウトボタン -->
             {% if session.get('username') %}
             <div style="display: flex; align-items: center; gap: 15px; background-color: #1e293b; padding: 8px 16px; border-radius: 8px; border: 1px solid #334155;">
-                <span style="font-size: 0.9rem; color: #f8fafc;">username <strong>{{ session.get('username') }}</strong> さん</span>
+                <span style="font-size: 0.9rem; color: #f8fafc;"><strong>{{ session.get('username') }}</strong> さん</span>
                 <a href="/logout" style="background-color: #ef4444; color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; transition: background-color 0.2s;">
                     ログアウト
                 </a>

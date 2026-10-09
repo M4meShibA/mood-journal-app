@@ -62,6 +62,7 @@ body {
 
 /* 入力欄のデザイン（日付・テキストエリア） */
 input[type="date"],
+input[type="number"],
 textarea {
     width: 100%;
     box-sizing: border-box;
@@ -72,10 +73,16 @@ textarea {
     color: var(--text-main);
     font-size: 1rem;
     font-family: inherit;
+    color-scheme: dark;
+}
+
+input[type="number"] {
+    max-width: 200px;
 }
 
 /* 入力欄にフォーカスした時（枠線を光らせる） */
 input[type="date"]:focus,
+input[type="number"]:focus,
 textarea:focus {
     outline: none;
     border-color: var(--accent);
@@ -89,12 +96,13 @@ textarea:focus {
     margin-top: 8px;
 }
 
-.radio-label {
+.form-group .radio-label {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 44px;
     height: 44px;
+    margin: 0;
     background-color: #0f172a;
     color: var(--text-muted);
     border: 1px solid var(--border);
@@ -107,22 +115,37 @@ textarea:focus {
     transition: all 0.2s ease;
 }
 
-.radio-label input[type="radio"]{
+.radio-label input[type="radio"] {
     display: none;
 }
 
-.radio-label:hover{
+.form-group .radio-label:hover {
     background-color: #1e293b;
     border-color: var(--accent);
 }
 
-.radio-label:has(input[type="radio"]:checked){
-    background-color: #000000;
-    color: var(--accent);
+.form-group .radio-label:has(input[type="radio"]:checked) {
+    background-color: var(--accent);
+    color: #0a0f1c;
     border-color: var(--accent);
-    box-shadow: 0 0 10px rgba(76, 188, 236, 0.4);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
 }
 
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+.form-group .radio-label:hover {
+    background-color: #1e293b;
+    border-color: var(--accent);
+}
+
+.form-group .radio-label:has(input[type="radio"]:checked) {
+    background-color: var(--accent);
+    color: #0a0f1c;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
 
 /* 保存ボタンのデザイン */
 .submit-btn {
